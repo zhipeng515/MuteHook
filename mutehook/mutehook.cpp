@@ -6,6 +6,13 @@
 #include "mutehook.h"
 #include "../../MuteVolume/MuteVolume/MuteVolume.h"
 
+#ifndef _LIB
+#ifdef _DEBUG
+#pragma comment (lib, "../../../lib/Debug/MuteVolume.lib")
+#else
+#pragma comment (lib, "../../../lib/Release/MuteVolume.lib")
+#endif
+#endif
 
 DWORD WINAPI HandleEventThread(LPVOID lpParameter)
 {
@@ -35,6 +42,10 @@ void MuteHook_Mute(bool bMute)
 	}
 }
 
+void MuteHook_Unload()
+{
+	MuteHook::Instance()->Exit();
+}
 
 MuteHook::MuteHook()
 {
@@ -44,19 +55,14 @@ MuteHook::MuteHook()
 	m_hUnmuteEndEvent = CreateEvent(NULL, true, false, _T("MuteHook_UnmuteEndEvent"));
 	m_hExitEvent = CreateEvent(NULL, false, false, _T("MuteHook_ExitEvent"));
 
+	m_hModule = NULL;
+
 	HANDLE hThread = CreateThread(NULL, 0, &::HandleEventThread, this, 0, 0);
 	CloseHandle(hThread);
 }
 
 MuteHook::~MuteHook()
 {
-	Exit();
-
-	CloseHandle(m_hMuteEvent);
-	CloseHandle(m_hUnmuteEvent);
-	CloseHandle(m_hMuteEndEvent);
-	CloseHandle(m_hUnmuteEndEvent);
-	CloseHandle(m_hExitEvent);
 }
 
 void MuteHook::HandleEventThread()
@@ -91,4 +97,12 @@ void MuteHook::HandleEventThread()
 			break;
 		}
 	}
+	CloseHandle(m_hMuteEvent);
+	CloseHandle(m_hUnmuteEvent);
+	CloseHandle(m_hMuteEndEvent);
+	CloseHandle(m_hUnmuteEndEvent);
+	CloseHandle(m_hExitEvent);
+
+	// 在线程完成之后自动卸载动态库
+	FreeLibraryAndExitThread(m_hModule, 123);
 }

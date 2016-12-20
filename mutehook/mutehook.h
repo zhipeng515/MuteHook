@@ -15,6 +15,10 @@ public:
 	~MuteHook();
 	void HandleEventThread();
 
+	void SetModuleHandle(HMODULE hModule)
+	{
+		m_hModule = hModule;
+	}
 	void Exit()
 	{
 		SetEvent(m_hExitEvent);
@@ -27,7 +31,11 @@ public:
 	HANDLE m_hUnmuteEndEvent;
 
 	HANDLE m_hExitEvent;
+
+	HMODULE m_hModule;
 };
 
 MUTEHOOK_API bool MuteHook_IsMute();
 MUTEHOOK_API void MuteHook_Mute(bool bMute);
+
+MUTEHOOK_API void MuteHook_Unload();

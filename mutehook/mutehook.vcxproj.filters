@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="CommonFunction">
+      <UniqueIdentifier>{5a7229d6-c676-4bc7-95e5-e9af01795e8c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -26,6 +29,18 @@
     </ClInclude>
     <ClInclude Include="mutehook.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MuteHookLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CommonFunction\DetoursWrapper.h">
+      <Filter>CommonFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CommonFunction\Singleton.h">
+      <Filter>CommonFunction</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CommonFunction\Utility.h">
+      <Filter>CommonFunction</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
