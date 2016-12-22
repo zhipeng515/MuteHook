@@ -11,17 +11,14 @@
 class MuteHook : public Singleton<MuteHook>
 {
 public:
-	MuteHook();
-	~MuteHook();
+	virtual bool Init();
+	virtual void Uninit();
+
 	void HandleEventThread();
 
 	void SetModuleHandle(HMODULE hModule)
 	{
 		m_hModule = hModule;
-	}
-	void Exit()
-	{
-		SetEvent(m_hExitEvent);
 	}
 
 	HANDLE m_hMuteEvent;
@@ -38,4 +35,5 @@ public:
 MUTEHOOK_API bool MuteHook_IsMute();
 MUTEHOOK_API void MuteHook_Mute(bool bMute);
 
+MUTEHOOK_API bool MuteHook_Load();
 MUTEHOOK_API void MuteHook_Unload();

@@ -5,6 +5,7 @@
 #include "../../CommonFunction/Singleton.h"
 #include "../../CommonFunction/Utility.h"
 #include "../../CommonFunction/DetoursWrapper.h"
+#include "../../CommonFunction/StdLog.h"
 
 DETOURS_FUNC_DECLARE(BOOL, WINAPI, CreateProcess, 
 	__in_opt    LPCTSTR lpApplicationName,
@@ -21,34 +22,35 @@ DETOURS_FUNC_DECLARE(BOOL, WINAPI, CreateProcess,
 class MuteHookLoader : public Singleton<MuteHookLoader>
 {
 public:
-	MuteHookLoader()
+	virtual bool Init()
 	{
-		m_MuteHook = NULL;
-		DETOURS_FUNC_ATTACH(CreateProcess);
+		return LoadMuteHook();
 	}
-	~MuteHookLoader()
+	virtual void Uninit()
 	{
 		UnloadMuteHook();
-		DETOURS_FUNC_DETACH(CreateProcess);
 	}
 
-	typedef bool(*FuncDefine_MuteHook_IsMute)();
-	FuncDefine_MuteHook_IsMute MuteHook_IsMute;
+	typedef bool(*FuncDefine_MuteHook_Bool)();
+	FuncDefine_MuteHook_Bool MuteHook_IsMute;
+
 	typedef void(*FuncDefine_MuteHook_Mute)(bool);
 	FuncDefine_MuteHook_Mute MuteHook_Mute;
-	typedef void(*FuncDefine_MuteHook_Unload)();
-	FuncDefine_MuteHook_Unload MuteHook_Unload;
+
+	typedef void(*FuncDefine_MuteHook_Void)();
+	FuncDefine_MuteHook_Void MuteHook_Unload;
 
 	bool LoadMuteHook()
 	{
-		TCHAR szDllPath[MAX_PATH];
-		GetModuleFileName(NULL, szDllPath, MAX_PATH);
-		PathRemoveFileSpec(szDllPath);
-		lstrcat(szDllPath, _T("\\mutehook.dll"));
-		m_MuteHook = LoadLibrary(szDllPath);
-		MuteHook_IsMute = (FuncDefine_MuteHook_IsMute)GetProcAddress(m_MuteHook, "MuteHook_IsMute");
-		MuteHook_Mute = (FuncDefine_MuteHook_Mute)GetProcAddress(m_MuteHook, "MuteHook_Mute");
-		MuteHook_Unload = (FuncDefine_MuteHook_Unload)GetProcAddress(m_MuteHook, "MuteHook_Unload");
+		DETOURS_FUNC_ATTACH(CreateProcess);
+
+		m_MuteHook = LoadLibrary((Utility::GetExePath() + _T("\\mutehook.dll")).c_str());
+		if (m_MuteHook)
+		{
+			MuteHook_IsMute = (FuncDefine_MuteHook_Bool)GetProcAddress(m_MuteHook, "MuteHook_IsMute");
+			MuteHook_Mute = (FuncDefine_MuteHook_Mute)GetProcAddress(m_MuteHook, "MuteHook_Mute");
+			MuteHook_Unload = (FuncDefine_MuteHook_Void)GetProcAddress(m_MuteHook, "MuteHook_Unload");
+		}
 
 		return m_MuteHook && MuteHook_IsMute && MuteHook_Mute && MuteHook_Unload;
 	}
@@ -58,6 +60,8 @@ public:
 		{
 			MuteHook_Unload();
 			m_MuteHook = NULL;
+
+			DETOURS_FUNC_DETACH(CreateProcess);
 		}
 	}
 	bool LoadMuteHookToProcess(DWORD dwProcessID)

@@ -4,7 +4,9 @@
 #include "stdafx.h"
 #include <tchar.h>
 #include "mutehook.h"
+#include <ObjBase.h>
 #include "../../MuteVolume/MuteVolume/MuteVolume.h"
+#include "../../CommonFunction/StdLog.h"
 
 #ifndef _LIB
 #ifdef _DEBUG
@@ -44,10 +46,10 @@ void MuteHook_Mute(bool bMute)
 
 void MuteHook_Unload()
 {
-	MuteHook::Instance()->Exit();
+	MuteHook::Instance()->Uninit();
 }
 
-MuteHook::MuteHook()
+bool MuteHook::Init()
 {
 	m_hMuteEvent = CreateEvent(NULL, true, false, _T("MuteHook_MuteEvent"));
 	m_hUnmuteEvent = CreateEvent(NULL, true, false, _T("MuteHook_UnmuteEvent"));
@@ -59,10 +61,13 @@ MuteHook::MuteHook()
 
 	HANDLE hThread = CreateThread(NULL, 0, &::HandleEventThread, this, 0, 0);
 	CloseHandle(hThread);
+
+	return true;
 }
 
-MuteHook::~MuteHook()
+void MuteHook::Uninit()
 {
+	SetEvent(m_hExitEvent);
 }
 
 void MuteHook::HandleEventThread()
@@ -73,6 +78,8 @@ void MuteHook::HandleEventThread()
 		m_hUnmuteEvent,
 		m_hExitEvent
 	};
+
+	MuteVolumeManager::Instance()->Init();
 
 	while (bRun)
 	{
@@ -102,6 +109,8 @@ void MuteHook::HandleEventThread()
 	CloseHandle(m_hMuteEndEvent);
 	CloseHandle(m_hUnmuteEndEvent);
 	CloseHandle(m_hExitEvent);
+
+	MuteVolumeManager::Instance()->Uninit();
 
 	// 在线程完成之后自动卸载动态库
 	FreeLibraryAndExitThread(m_hModule, 123);

@@ -1,7 +1,7 @@
 // dllmain.cpp : 定义 DLL 应用程序的入口点。
 #include "stdafx.h"
-
 #include "mutehook.h"
+#include "../../CommonFunction/Utility.h"
 #include "../../MuteVolume/MuteVolume/MuteVolume.h"
 
 DWORD WINAPI FreeSelfProc(PVOID param)
@@ -21,7 +21,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	{
 	case DLL_PROCESS_ATTACH:
 //		MessageBox(NULL, "DLL_PROCESS_ATTACH", "mutehook", MB_OK);
-		MuteVolumeManager::Instance();
+		MuteHook::Instance()->Init();
 		MuteHook::Instance()->SetModuleHandle(hModule);
 		break;
 	case DLL_THREAD_ATTACH:
@@ -33,6 +33,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 //		MuteVolumeManager::Instance()->Mute(false);
 		break;
 	case DLL_PROCESS_DETACH:
+//		CoUninitialize();
 //		MessageBox(NULL, "DLL_PROCESS_DETACH", "mutehook", MB_OK);
 //		MuteHook::Instance()->Exit();
 		break;
