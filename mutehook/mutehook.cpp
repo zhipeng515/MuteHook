@@ -3,8 +3,9 @@
 
 #include "stdafx.h"
 #include <tchar.h>
-#include "mutehook.h"
 #include <ObjBase.h>
+#include <process.h> 
+#include "mutehook.h"
 #include "../../MuteVolume/MuteVolume/MuteVolume.h"
 #include "../../CommonFunction/StdLog.h"
 
@@ -16,7 +17,7 @@
 #endif
 #endif
 
-DWORD WINAPI HandleEventThread(LPVOID lpParameter)
+unsigned int __stdcall HandleEventThread(void* lpParameter)
 {
 	MuteHook* pMuteHook = (MuteHook*)lpParameter;
 	pMuteHook->HandleEventThread();
@@ -59,7 +60,7 @@ bool MuteHook::Init()
 
 	m_hModule = NULL;
 
-	HANDLE hThread = CreateThread(NULL, 0, &::HandleEventThread, this, 0, 0);
+	HANDLE hThread = (HANDLE)_beginthreadex(0, 0, &::HandleEventThread, static_cast<void*>(this), 0, 0);
 	CloseHandle(hThread);
 
 	return true;
@@ -112,6 +113,5 @@ void MuteHook::HandleEventThread()
 
 	MuteVolumeManager::Instance()->Uninit();
 
-	// 在线程完成之后自动卸载动态库
-	FreeLibraryAndExitThread(m_hModule, 123);
+	_endthreadex(123);
 }
